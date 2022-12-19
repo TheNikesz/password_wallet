@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../../main.dart';
 import '../../cubits/auth/session_cubit.dart';
@@ -16,6 +19,18 @@ class AuthPage extends StatelessWidget {
       listener: (context, state) {
         if (state is SessionAuthenticated) {
           navigatorKey.currentState?.pushNamedAndRemoveUntil('/passwords', (Route<dynamic> route) => false);
+        } else if (state is SessionFailure) {
+          Fluttertoast.showToast(
+            msg: state.message,
+            toastLength: Toast.LENGTH_LONG,
+            gravity: ToastGravity.BOTTOM,
+            webPosition: 'center',
+            webShowClose: true,
+            timeInSecForIosWeb: 3,
+            webBgColor: '#2196F3',
+            backgroundColor: Colors.blue,
+            fontSize: 16.0
+          );
         }
       },
       child: Scaffold(
@@ -89,7 +104,7 @@ class AuthPage extends StatelessWidget {
         if (_formKey.currentState!.validate()) {
           final formData = _formKey.currentState?.value;
           final sessionCubit = BlocProvider.of<SessionCubit>(context);
-          final session = await sessionCubit.register(
+          await sessionCubit.register(
               login: formData!['Login'],
               password: formData['Password'],
               isPasswordKeptAsHash: formData['isPasswordKeptAsHash']);
@@ -108,8 +123,7 @@ class AuthPage extends StatelessWidget {
           if (_formKey.currentState!.validate()) {
             final formData = _formKey.currentState?.value;
             final sessionCubit = BlocProvider.of<SessionCubit>(context);
-            await sessionCubit.logIn(
-                login: formData!['Login'], password: formData['Password']);
+            await sessionCubit.logIn(login: formData!['Login'], password: formData['Password']);
           }
         },
       ),

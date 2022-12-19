@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../../data/repositories/password_repository.dart';
 import '../../../domain/models/password.dart';
 import '../../cubits/auth/session_cubit.dart';
 import '../../cubits/password/password_cubit.dart';

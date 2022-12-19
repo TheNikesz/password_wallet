@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../cubits/auth/session_cubit.dart';
-import '../../cubits/password/password_cubit.dart';
 
 class ChangeMasterPasswordPage extends StatelessWidget {
   final _formKey = GlobalKey<FormBuilderState>();

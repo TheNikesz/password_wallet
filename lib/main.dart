@@ -4,7 +4,6 @@ import 'package:password_wallet_frontend/data/data_sources/api.dart';
 import 'package:password_wallet_frontend/presentation/app_router.dart';
 import 'package:password_wallet_frontend/presentation/cubits/auth/session_cubit.dart';
 import 'package:password_wallet_frontend/presentation/cubits/password/password_cubit.dart';
-import 'package:password_wallet_frontend/presentation/pages/password/change_master_password_page.dart';
 
 import 'data/repositories/account_repository.dart';
 import 'data/repositories/password_repository.dart';

@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -23,6 +22,7 @@ class SessionStatus extends StatelessWidget {
               ),
               _buildLogOutButton(context),
               _buildChangeMasterPasswordButton(context),
+              _buildManageIpLocksButton(context),
             ],
           ],
         );
@@ -54,6 +54,18 @@ class SessionStatus extends StatelessWidget {
           navigatorKey.currentState?.pushNamed('/change-master-password');
         },
         child: const Text('Change master password'),
+      ),
+    );
+  }
+
+  Widget _buildManageIpLocksButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        onPressed: () {
+          navigatorKey.currentState?.pushNamed('/manage-ip-locks');
+        },
+        child: const Text('Manage IP locks'),
       ),
     );
   }

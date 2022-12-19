@@ -1,11 +1,13 @@
 
+import 'dart:io';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:password_wallet_frontend/data/repositories/account_repository.dart';
 import 'package:password_wallet_frontend/domain/models/master_password.dart';
-import 'package:password_wallet_frontend/presentation/cubits/password/password_cubit.dart';
 
+import '../../../domain/models/ip_lock.dart';
 import '../../../domain/models/login.dart';
 import '../../../domain/models/register.dart';
 import '../../../domain/models/session.dart';
@@ -47,7 +49,8 @@ class SessionCubit extends Cubit<SessionState> {
       emit(SessionAuthenticated(session: session));
     
       navigatorKey.currentState?.pushNamedAndRemoveUntil('/passwords', (Route<dynamic> route) => false);
-    } on Exception {
+    } on HttpException catch (e) {
+      emit(SessionFailure(message: e.message));
       emit(SessionUnauthenticated());
     }
   }
@@ -70,7 +73,8 @@ class SessionCubit extends Cubit<SessionState> {
         )); 
         
         navigatorKey.currentState?.pushNamedAndRemoveUntil('/passwords', (Route<dynamic> route) => false);
-      } on Exception {
+      } on HttpException catch (e) {
+        emit(SessionFailure(message: e.message));
         emit(SessionUnauthenticated());
       }
     }
@@ -87,6 +91,20 @@ class SessionCubit extends Cubit<SessionState> {
     } on Exception {
       emit(SessionUnauthenticated());
     }
+  }
+
+  Future<String> getLoginStatistics({required String token}) async {
+    return await accountRepository.getLoginStatistics(token);
+  }
+
+  Future<List<IpLock>> getAllIpLocks({required String token}) async {
+    return await accountRepository.getAllIpLocks(token);
+  }
+
+  Future<void> deleteIpLock(String token, String ipAddress) async {
+    await accountRepository.deleteIpLock(token, ipAddress);
+    navigatorKey.currentState?.popAndPushNamed('/manage-ip-locks');
+    return;
   }
 
   Future<void> logOut() async {
