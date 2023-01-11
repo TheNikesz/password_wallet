@@ -23,12 +23,14 @@ class Register {
   factory Register.fromMap(Map<String, dynamic> map) {
     return Register(
       login: map['login'] ?? '',
-      password: map['password'] ?? '', 
-      isPasswordKeptAsHash: map['isPasswordKeptAsHash'] ?? true,
+      password: map['password'] ?? '',
+      isPasswordKeptAsHash: map['isPasswordKeptAsHash'] ?? false,
     );
   }
 
   String toJson() => json.encode(toMap());
+
+  // factory Register.fromJson(Map<String, dynamic> source) => Register.fromMap(source);
 
   factory Register.fromJson(String source) => Register.fromMap(json.decode(source));
 }

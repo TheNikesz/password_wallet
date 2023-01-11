@@ -41,6 +41,7 @@ class PasswordWalletApp extends StatelessWidget {
         create: (context) => SessionCubit(
           accountRepository: context.read<AccountRepository>(),
         )..logInFromStorage(),
+        // ),
         child: BlocProvider(
           create: (context) => PasswordCubit(
             passwordRepository: context.read<PasswordRepository>(),

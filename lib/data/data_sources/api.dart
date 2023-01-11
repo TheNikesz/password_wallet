@@ -9,6 +9,7 @@ import 'package:password_wallet_frontend/domain/models/session.dart';
 import '../../domain/models/ip_lock.dart';
 import '../../domain/models/password.dart';
 import '../../domain/models/register.dart';
+import '../../domain/models/shared_password.dart';
 
 class AccountApi {
   static const _baseUrl = 'https://localhost:7287/api/Account';
@@ -101,6 +102,7 @@ class PasswordApi {
     }
 
     final parsedJson = response.data as List;
+    
     return parsedJson.map((data) => Password.fromJson(data)).toList();
   }
 
@@ -119,6 +121,17 @@ class PasswordApi {
   Future<Password> editPassword(String token, Password password) async {
     dio.options.headers['Content-Type'] = 'application/json; charset=UTF-8';
     dio.options.headers["Authorization"] = "Bearer $token";
+
+    // try {
+    //   var response = await dio.patch(_baseUrl, data: password.toJson());
+    //   print(response.data);
+    //   print(response);
+    //   return Password.fromJson(response.data);
+    // } on DioError catch (e) {
+    //   print(e.response!.data);
+    //   throw HttpException(e.response!.data);
+    // }
+
     var response = await dio.patch(_baseUrl, data: password.toJson());
 
     if (response.statusCode != 200) {
@@ -139,6 +152,58 @@ class PasswordApi {
   }
 
   Future<String> decryptPassword(String token, String id) async {
+    dio.options.headers['Content-Type'] = 'application/json; charset=UTF-8';
+    dio.options.headers["Authorization"] = "Bearer $token";
+    var response = await dio.get('$_baseUrl/decrypt/$id');
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.statusMessage ?? '');
+    }
+
+    return response.data;
+  }
+}
+
+class SharedPasswordApi {
+  static const _baseUrl = 'https://localhost:7287/api/SharedPasswords';
+  Dio dio = Dio();
+
+  Future<List<Password>> getAllSharedPasswords(String token) async {
+    dio.options.headers['Content-Type'] = 'application/json; charset=UTF-8';
+    dio.options.headers["Authorization"] = "Bearer $token";
+    var response = await dio.get(_baseUrl);
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.statusMessage ?? '');
+    }
+
+    final parsedJson = response.data as List;
+    return parsedJson.map((data) => Password.fromJson(data)).toList();
+  }
+
+  Future<SharedPassword> addSharedPassword(String token, SharedPassword sharedPassword) async {
+    dio.options.headers['Content-Type'] = 'application/json; charset=UTF-8';
+    dio.options.headers["Authorization"] = "Bearer $token";
+    var response = await dio.post(_baseUrl, data: sharedPassword.toJson());
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.statusMessage ?? '');
+    }
+
+    return SharedPassword.fromJson(response.data);
+  }
+
+  Future<void> deleteSharedPassword(String token, String id) async {
+    dio.options.headers['Content-Type'] = 'application/json; charset=UTF-8';
+    dio.options.headers["Authorization"] = "Bearer $token";
+    var response = await dio.delete('$_baseUrl/$id');
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.statusMessage ?? '');
+    }
+  }
+
+  Future<String> decryptSharedPassword(String token, String id) async {
     dio.options.headers['Content-Type'] = 'application/json; charset=UTF-8';
     dio.options.headers["Authorization"] = "Bearer $token";
     var response = await dio.get('$_baseUrl/decrypt/$id');

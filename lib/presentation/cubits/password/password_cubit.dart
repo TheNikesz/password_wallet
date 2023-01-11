@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:password_wallet_frontend/data/repositories/password_repository.dart';
+import 'package:password_wallet_frontend/domain/models/shared_password.dart';
 
 import '../../../domain/models/password.dart';
 import '../../../main.dart';
@@ -21,12 +22,15 @@ class PasswordCubit extends Cubit<PasswordState> {
     try {
       emit(const PasswordLoading());
       final passwords = await passwordRepository.getAllPasswords(token);
+      final sharedPasswords = await passwordRepository.getAllSharedPasswords(token);
 
-      emit(PasswordSuccess(passwords));
+      emit(PasswordSuccess(passwords: passwords, sharedPasswords: sharedPasswords));
     } on Exception {
       emit(const PasswordFailure());
     }
   }
+
+
 
   Future<void> addPassword(String token, Password password) async {
     try {
@@ -34,7 +38,25 @@ class PasswordCubit extends Cubit<PasswordState> {
       await passwordRepository.addPassword(token, password);
 
       final passwords = await passwordRepository.getAllPasswords(token);
-      emit(PasswordSuccess(passwords));
+      final sharedPasswords = await passwordRepository.getAllSharedPasswords(token);
+
+      emit(PasswordSuccess(passwords: passwords, sharedPasswords: sharedPasswords));
+
+      navigatorKey.currentState?.pushNamedAndRemoveUntil('/passwords', (Route<dynamic> route) => false);
+    } on Exception {
+      emit(const PasswordFailure());
+    }
+  }
+
+  Future<void> addSharedPassword(String token, SharedPassword sharedPassword) async {
+    try {
+      emit(const PasswordLoading());
+      await passwordRepository.addSharedPassword(token, sharedPassword);
+
+      final passwords = await passwordRepository.getAllPasswords(token);
+      final sharedPasswords = await passwordRepository.getAllSharedPasswords(token);
+
+      emit(PasswordSuccess(passwords: passwords, sharedPasswords: sharedPasswords));
 
       navigatorKey.currentState?.pushNamedAndRemoveUntil('/passwords', (Route<dynamic> route) => false);
     } on Exception {
@@ -48,7 +70,9 @@ class PasswordCubit extends Cubit<PasswordState> {
       await passwordRepository.editPassword(token, password);
 
       final passwords = await passwordRepository.getAllPasswords(token);
-      emit(PasswordSuccess(passwords));
+      final sharedPasswords = await passwordRepository.getAllSharedPasswords(token);
+
+      emit(PasswordSuccess(passwords: passwords, sharedPasswords: sharedPasswords));
 
       navigatorKey.currentState?.pushNamedAndRemoveUntil('/passwords', (Route<dynamic> route) => false);
     } on Exception {
@@ -67,6 +91,18 @@ class PasswordCubit extends Cubit<PasswordState> {
     }
   }
 
+  Future<void> deleteSharedPassword(String token, String id, Password password) async {
+    try {
+      emit(const PasswordLoading());
+      await passwordRepository.deleteSharedPassword(token, id);
+      await getAllPasswords(token);
+
+      navigatorKey.currentState?.pushNamedAndRemoveUntil('/passwords', (Route<dynamic> route) => false);
+    } on Exception {
+      emit(const PasswordFailure());
+    }
+  }
+
   Future<String> decryptPassword(String token, String id) async {
     try {
       emit(const PasswordLoading());
@@ -76,6 +112,14 @@ class PasswordCubit extends Cubit<PasswordState> {
     } on Exception {
       emit(const PasswordFailure());
       throw NullThrownError;
+    }
+  }
+
+  void changeModeSwitchValue(bool value) {
+    if (state is PasswordSuccess) {
+      emit((state as PasswordSuccess).copyWith(
+        isEdit: value,
+      ));
     }
   }
 }

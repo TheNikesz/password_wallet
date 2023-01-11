@@ -28,8 +28,10 @@ class PasswordsPage extends StatelessWidget {
                 children: [
                   const SessionStatus(),
                   _buildLoginStatistics(context, sessionState),
+                  if (passwordState is PasswordSuccess)
+                    _buildModeSwitch(context, passwordState.isEdit),
                   _buildAddPasswordButton(context),
-                  _buildPasswords(sessionState),
+                  _buildPasswords(sessionState, ),
                 ],
               ),
             ),
@@ -55,7 +57,36 @@ class PasswordsPage extends StatelessWidget {
                 children: [
                   _buildDecryptPasswordButton(
                       context, sessionState, passwordState, index),
+                  _buildSharePasswordButton(
+                    context, sessionState, passwordState, index),
+                  _buildEditPasswordButton(
+                      context, sessionState, passwordState, index, passwordState.isEdit),
                   _buildDeletePasswordButton(
+                      context, sessionState, passwordState, index, passwordState.isEdit),
+                ],
+              ),
+            ]
+          ],
+        ),
+      );
+    });
+  }
+
+  Widget _buildSharedPassword(sessionState, int index) {
+    return BlocBuilder<PasswordCubit, PasswordState>(
+        builder: (context, passwordState) {
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            if (passwordState is PasswordSuccess) ...[
+              Text(passwordState.sharedPasswords.elementAt(index).login),
+              Text(passwordState.sharedPasswords.elementAt(index).webAddress),
+              Text(passwordState.sharedPasswords.elementAt(index).description),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildDecryptPasswordButton(
                       context, sessionState, passwordState, index),
                 ],
               ),
@@ -96,18 +127,18 @@ class PasswordsPage extends StatelessWidget {
   }
 
   Widget _buildDeletePasswordButton(BuildContext context,
-      SessionState sessionState, PasswordState passwordState, int index) {
+      SessionState sessionState, PasswordState passwordState, int index, bool isEdit) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
-        onPressed: () async {
+        onPressed: isEdit ? () async {
           if (passwordState is PasswordSuccess &&
               sessionState is SessionAuthenticated) {
             final passwordCubit = BlocProvider.of<PasswordCubit>(context);
             await passwordCubit.deletePassword(sessionState.session.token,
                 passwordState.passwords.elementAt(index).id!);
           }
-        },
+        } : null,
         child: const Text('Delete password'),
       ),
     );
@@ -126,6 +157,17 @@ class PasswordsPage extends StatelessWidget {
             );
             passwordWidgets.add(
               _buildPassword(sessionState, i),
+            );
+          }
+
+          for (var i = 0; i < passwordState.sharedPasswords.length; i++) {
+            passwordWidgets.add(
+              const Divider(
+                color: Colors.black,
+              ),
+            );
+            passwordWidgets.add(
+              _buildSharedPassword(sessionState, i),
             );
           }
         }
@@ -150,6 +192,36 @@ class PasswordsPage extends StatelessWidget {
     );
   }
 
+  Widget _buildEditPasswordButton(BuildContext context, SessionState sessionState, PasswordState passwordState, int index, bool isEdit) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        onPressed: isEdit ? () {
+          if (passwordState is PasswordSuccess && sessionState is SessionAuthenticated) {
+            navigatorKey.currentState?.pushNamed('/edit-password', arguments: passwordState.passwords.elementAt(index));
+          }
+        } : null,
+          
+        child: const Text('Edit password'),
+      ),
+    );
+  }
+
+  Widget _buildSharePasswordButton(BuildContext context, SessionState sessionState, PasswordState passwordState, int index) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        onPressed: () {
+          if (passwordState is PasswordSuccess && sessionState is SessionAuthenticated) {
+            navigatorKey.currentState?.pushNamed('/share-password', arguments: passwordState.passwords.elementAt(index));
+          }
+        },
+          
+        child: const Text('Share password'),
+      ),
+    );
+  }
+
   Widget _buildLoginStatistics(BuildContext context, SessionState state) {
     final sessionCubit = BlocProvider.of<SessionCubit>(context);
     if (state is SessionAuthenticated) {
@@ -168,5 +240,22 @@ class PasswordsPage extends StatelessWidget {
     } else {
       return const Text('');
     }
+  }
+
+  Widget _buildModeSwitch(BuildContext context, bool isEdit) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("Read mode"),
+        Switch(
+          value: isEdit,
+          onChanged: (value) {
+            final passwordCubit = BlocProvider.of<PasswordCubit>(context);
+            passwordCubit.changeModeSwitchValue(value);
+          },
+        ),
+        const Text("Edit mode"),
+      ],
+    );
   }
 }
