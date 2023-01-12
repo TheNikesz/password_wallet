@@ -102,6 +102,7 @@ class EditPasswordPage extends StatelessWidget {
                 await passwordCubit.editPassword(
                     state.session.token,
                     Password(
+                      id: password.id,
                       password: formData!['Password'],
                       login: formData['Login'],
                       webAddress: formData['Website'],
